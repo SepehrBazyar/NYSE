@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "nyse"
+version = "0.1.0"
+description = "Real-Time Trading Notifier"
+authors = ["Sepehr Bazyar <bazyar.sepehr@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = {extras = ["standard"], version = "^0.128.0"}
+uvicorn = { extras = ["standard"], version = "^0.40.0" }
+sqlmodel = "^0.0.31"
+psycopg2-binary = "^2.9.11"
+alembic = "^1.17.2"
+pydantic-settings = "^2.12.0"
+redis = "^7.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.2"
+httpx = "^0.28.1"
+pre-commit = "^4.5.1"
+ruff = "^0.14.10"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "hmirror"
+url = "https://repo.hmirror.ir/python/simple"
+priority = "primary"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+  "E", "W",   # pycodestyle
+  "F",        # pyflakes
+  "I",        # isort
+  "B",        # bugbear
+  "UP",       # pyupgrade
+  "N",        # pep8-naming
+]
+ignore = [
+  "E501",  # Line length handled by ruff-format
+  "B008",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
