@@ -6,7 +6,12 @@ from fastapi import (
 
 from src.websocket.manager import manager
 
-router = APIRouter(prefix="/ws", tags=["websocket"])
+router = APIRouter(
+    prefix="/ws",
+    tags=[
+        "WebSocket",
+    ],
+)
 
 
 @router.websocket("")

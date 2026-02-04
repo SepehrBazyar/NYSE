@@ -1,8 +1,11 @@
 import asyncio
+import logging
 
 from fastapi import WebSocket
 
 from src.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class ConnectionManager:
@@ -22,6 +25,7 @@ class ConnectionManager:
             self.tag_to_ws.get(tag_id, set()).discard(ws)
             if tag_id in self.tag_to_ws and not self.tag_to_ws[tag_id]:
                 del self.tag_to_ws[tag_id]
+
         self.ws_to_tags.pop(ws, None)
         self.ws_to_queue.pop(ws, None)
         task = self.ws_to_flush_task.pop(ws, None)
@@ -34,14 +38,17 @@ class ConnectionManager:
                 self.ws_to_tags[ws].add(tag_id)
                 if tag_id not in self.tag_to_ws:
                     self.tag_to_ws[tag_id] = set()
+
                 self.tag_to_ws[tag_id].add(ws)
 
     async def broadcast_to_tag(self, tag_id: int, message: dict):
         if tag_id not in self.tag_to_ws:
             return
+
         for ws in list(self.tag_to_ws[tag_id]):
             if ws not in self.ws_to_queue:
                 self.ws_to_queue[ws] = []
+
             self.ws_to_queue[ws].append(message)
 
             if ws not in self.ws_to_flush_task or self.ws_to_flush_task[ws].done():
@@ -51,17 +58,18 @@ class ConnectionManager:
         await asyncio.sleep(settings.BATCH_INTERVAL_MS / 1000.0)
         if ws in self.ws_to_queue and self.ws_to_queue[ws]:
             batch = self.ws_to_queue[ws]
-            del self.ws_to_queue[ws]
             try:
                 await ws.send_json(batch)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.exception(e)
+            else:
+                del self.ws_to_queue[ws]
 
     async def send_immediate(self, ws: WebSocket, message: dict):
         try:
             await ws.send_json([message])
-        except Exception:
-            pass
+        except Exception as e:
+            logger.exception(e)
 
 
 manager = ConnectionManager()

@@ -6,14 +6,19 @@ from src.models import Deal
 from src.schemas.deal import CreateDeal, DealOut
 from src.services.notification import publish_new_deal
 
-router = APIRouter(prefix="/deals", tags=["deals"])
+router = APIRouter(
+    prefix="/deals",
+    tags=[
+        "Deals",
+    ],
+)
 
 
-@router.post("/", response_model=DealOut)
+@router.post("/")
 async def create_deal(
     deal_in: CreateDeal,
     session: AsyncSession = Depends(get_session),
-):
+) -> DealOut:
     db_deal = Deal(**deal_in.model_dump())
     session.add(db_deal)
     await session.commit()
