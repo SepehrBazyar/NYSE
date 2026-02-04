@@ -21,7 +21,13 @@ async def lifespan(app: FastAPI):
     await close_redis()
 
 
-app = FastAPI(lifespan=lifespan, title="Real-Time Trading Notifier")
+app = FastAPI(
+    lifespan=lifespan,
+    title="Real-Time Trading Notifier",
+)
 
-app.include_router(api_router, prefix="/api")
+app.include_router(
+    api_router,
+    prefix="/api",
+)
 app.include_router(ws_router)
