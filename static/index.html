@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYSE</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; }
+        #deals { list-style: none; padding: 0; }
+        #deals li { border: 1px solid #ddd; margin: 10px 0; padding: 10px; }
+        form { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Test WebSocket Deals</h1>
+    <form id="sub-form">
+        <label for="tags">Subscribe to Tags (comma-separated IDs):</label><br>
+        <input type="text" id="tags" placeholder="e.g., 1,2,3" required>
+        <button type="submit">Subscribe</button>
+    </form>
+    <h2>Received Deals:</h2>
+    <ul id="deals"></ul>
+
+    <script>
+        let ws = null;
+        const dealsList = document.getElementById('deals');
+        const subForm = document.getElementById('sub-form');
+
+        function connect() {
+            ws = new WebSocket('ws://localhost:8000/ws');
+
+            ws.onopen = () => {
+                console.log('Connected to WebSocket');
+            };
+
+            ws.onmessage = (event) => {
+                const batch = JSON.parse(event.data);
+                batch.forEach(deal => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `Tag: ${deal.tag_id} | Details: ${deal.details} (ID: ${deal.id})`;
+                    dealsList.appendChild(li);
+                });
+            };
+
+            ws.onclose = () => {
+                console.log('Disconnected. Reconnecting...');
+                setTimeout(connect, 1000);
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        subForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const tagsInput = document.getElementById('tags').value.trim();
+            if (tagsInput && ws && ws.readyState === WebSocket.OPEN) {
+                const tags = tagsInput.split(',').map(t => parseInt(t.trim(), 10)).filter(t => !isNaN(t));
+                ws.send(JSON.stringify({ action: 'subscribe', tags }));
+                console.log('Subscribed to tags:', tags);
+            } else {
+                alert('Connect first or enter valid tags!');
+            }
+        });
+
+        connect();
+    </script>
+</body>
+</html>

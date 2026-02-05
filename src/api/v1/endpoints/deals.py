@@ -21,8 +21,8 @@ async def create_deal(
 ) -> DealOut:
     db_deal = Deal(**deal_in.model_dump())
     session.add(db_deal)
-    await session.commit()
-    await session.refresh(db_deal)
+    session.commit()
+    session.refresh(db_deal)
 
     deal_data = {
         "id": db_deal.id,
