@@ -2,6 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from src.api.v1.router import router as api_router
 from src.redis.pubsub import (
@@ -31,3 +32,10 @@ app.include_router(
     prefix="/api",
 )
 app.include_router(ws_router)
+app.mount(
+    "/static",
+    StaticFiles(
+        directory="static",
+    ),
+    name="static",
+)
